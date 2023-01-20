@@ -156,7 +156,7 @@ the original dataset. For each bootstrap replicate, the geographic area
 mean RPN was calculated as the sum of area-weighted CPUEs over all depth
 strata
 
-$$E[\bar\psi_k]^* = \sum\limits_j\sum\limits_i\frac{\widehat\theta_{i,j,k}^*w_{j,k}} {n_{j,k}^*}.$$
+$$E[\bar\psi_ k]^* = \sum\limits_ j\sum\limits_ i\frac{\widehat\theta_{i,j,k}^*w_{j,k}} {n_ {j,k}^*}.$$
 
 The estimate of the geographic mean RPN was calculated as the mean of
 the bootstrap replicates
