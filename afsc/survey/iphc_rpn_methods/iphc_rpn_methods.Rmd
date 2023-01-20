@@ -1,17 +1,17 @@
 ---
 title: "IPHC setline survey abundance indices for non-halibut species"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: 2
-  github_document:
-    toc: yes
-    toc_depth: 2
   html_document:
     toc: yes
     toc_depth: 2
     theme: yeti
     toc_float: true
+  github_document:
+    toc: yes
+    toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: 2
   word_document:
     toc: yes
     toc_depth: 2
@@ -84,7 +84,7 @@ Data users can evaluate sample sizes using the `N_STATIONS` (number of stratum-s
 
 Variance estimates for IPHC FISS abundance indices are based on a bootstrap analysis using an ordinary nonparametric (i.e. resampling) approach in the R library ‘boot’ (Canty and Ripley 2021; Davison and Hinkley 1997). Each data set was defined as the number ($n$) of CPUE observations (number of individuals caught per hook; $\widehat \theta$) within a geographic area ($k$), such that there was one observation for each station ($i$) and depth stratum ($j$) combination within the area $[\widehat\theta_1,... \widehat\theta_n]$. A total of 1,500 bootstrap replicates ($B$) were run for each species and geographic area. Each bootstrap replicate was comprised of a set of $n$ bootstrap samples $[\widehat\theta_1^*,…\widehat\theta_n^*]$ where each $\widehat\theta_{(i,j,k)}^*$  was a random sample with replacement from the original dataset. For each bootstrap replicate, the geographic area mean RPN was calculated as the sum of area-weighted CPUEs over all depth strata 
 
-$$E[\bar\psi_k]^* = \sum\limits_j\sum\limits_i\frac{\widehat\theta_{i,j,k}^*w_{j,k}} {n_{j,k}^*}.$$
+$$E[\bar\psi_ k]^* = \sum\limits_ j\sum\limits_ i\frac{\widehat\theta_{i,j,k}^*w_{j,k}} {n_{j,k}^*}.$$
 
 The estimate of the geographic mean RPN was calculated as the mean of the bootstrap replicates
 
