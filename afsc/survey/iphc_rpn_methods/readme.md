@@ -9,6 +9,10 @@ IPHC setline survey abundance indices for non-halibut species
 - <a href="#bootstrap-methods" id="toc-bootstrap-methods">Bootstrap
   methods</a>
 - <a href="#example" id="toc-example">Example</a>
+- <a href="#references" id="toc-references">References</a>
+- <a href="#helpful-links-for-iphc-survey-design-and-history"
+  id="toc-helpful-links-for-iphc-survey-design-and-history">Helpful links
+  for IPHC survey design and history</a>
 
 Jane Sullivan<sup>1</sup>, Cindy Tribuzio<sup>1</sup>, Matt
 Callahan<sup>2</sup>, Niels Leuthold<sup>2</sup>, Jean Lee<sup>2</sup>
@@ -146,11 +150,23 @@ each station ($i$) and depth stratum ($j$) combination within the area
 $[\widehat\theta_1,... \widehat\theta_n]$. A total of 1,500 bootstrap
 replicates ($B$) were run for each species and geographic area. Each
 bootstrap replicate was comprised of a set of $n$ bootstrap samples
-where each was a random sample with replacement from the original
-dataset. For each bootstrap replicate, the geographic area mean RPN was
-calculated as the sum of area-weighted CPUEs over all depth strata
+$[\widehat\theta_1^*,…\widehat\theta_n^*]$ where each
+$\widehat\theta_{(i,j,k)}^*$ was a random sample with replacement from
+the original dataset. For each bootstrap replicate, the geographic area
+mean RPN was calculated as the sum of area-weighted CPUEs over all depth
+strata
 
-skipping over some formulas here
+$$E[\bar\psi_k]^* = \sum\limits_j\sum\limits_i\frac{\widehat\theta_{i,j,k}^*w_{j,k}} { n_{j,k}^*}.$$
+
+The estimate of the geographic mean RPN was calculated as the mean of
+the bootstrap replicates
+
+$$E[\bar\psi_k] = \frac{1}{B
+}\sum\limits_BE[\bar\psi_k]^*.$$
+
+and the associated bootstrap variance estimate was given by
+
+$$\widehat V[\bar\psi_k] = \frac{1}{B-1}\sum\limits_B(E[\bar\psi_k]^* - E[\bar\psi_k]).$$
 
 ## Example
 
@@ -160,22 +176,79 @@ RPNs for spiny dogfish in the GOA and plot the time series.
 #### Connect to the AKFIN database and query the spiny dogfish relative population numbers in the Central GOA and East Yakutat/Southeast management areas
 
 ``` r
-username_akfin = 'my_username'
-password_akfin = 'my_password'
+libs <- c("dplyr", "tidyr", "RODBC", "ggplot2", "getPass")
+if (length(libs[which(libs %in% rownames(installed.packages()) ==
+    FALSE)]) > 0) {
+    install.packages(libs[which(libs %in% rownames(installed.packages()) ==
+        FALSE)])
+}
+lapply(libs, library, character.only = TRUE)
+# Enter your username and password for the AKFIN database.
+# Note that these credentials are different than what you
+# may use to access AKFIN Answer. Contact AKFIN for more
+# information.
+channel_akfin <- odbcConnect("akfin", uid = getPass(msg = "username"),
+    pwd = getPass(), believeNRows = FALSE)
+
+dogfish <- sqlQuery(channel_akfin, query = ("
+                select    *
+                from      afsc_host.fiss_rpn
+                where     species in ('Spiny dogfish') and fmp_sub_area in ('CGOA', 'EY/SE')
+                ")) %>%
+    dplyr::rename_all(tolower)
 ```
 
-#### Plot the IPHC survey relative population numbers for spiny dogfish
+#### Plot the IPHC relative pouplation numbers for spiny dogfish
 
 ``` r
-summary(cars)
+ggplot(data = dogfish, aes(x = survey_year)) +
+  geom_ribbon(aes(ymin = fmp_lci, ymax = fmp_uci), alpha = 0.2, col = NA) +
+  geom_point(aes(y = fmp_rpn)) +
+  geom_line(aes(y = fmp_rpn)) +
+  facet_wrap(~fmp_sub_area) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = 'Year', y = 'RPN')
 ```
 
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
+![](readme_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-![](readme_files/figure-gfm/pressure-1.png)<!-- -->
+#### Plot the number of total sets and sets with positive catch for spiny dogfish by depth strata in order to evaluate changes in sampling effort over time
+
+``` r
+nsum <- dogfish %>% 
+         select(survey_year, rpn_strata,
+                total = n_stations, pos_catch = n_pos_catch) %>% 
+  tidyr::pivot_longer(cols = c('total', 'pos_catch'))
+
+ggplot(data = nsum, aes(x = survey_year, y = value, lty = name, shape = name)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~rpn_strata, ncol = 2) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = 'Year', y = 'Number of sets')
+```
+
+![](readme_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+## References
+
+Canty, A. and B. Ripley. 2021. boot: Bootstrap R (S-Plus) Functions. R
+package version 1.3-27.
+
+Davison, A. C. and D. V. Hinkley. 1997. Bootstrap Methods and Their
+Applications. Cambridge University Press, Cambridge. ISBN 0-521-57391-2.
+
+Echave, K., C. Rodgveller, and S. K. Shotwell. 2013. Calculation of the
+geographic sizes used to create population indices for the Alaska
+Fisheries Science Center longline survey. U.S. Dep. Commer., NOAA Tech.
+Memo. NMFS-AFSC-253, 93 p.
+
+R Core Team (2021). R: A language and environment for statistical
+computing. R Foundation for Statistical Computing, Vienna, Austria.
+<https://www.R-project.org/>.
+
+## Helpful links for IPHC survey design and history
+
+<https://iphc.int/management/science-and-research/fishery-independent-setline-survey-fiss>
+
+<https://iphc.int/uploads/pdf/tr/IPHC-2012-TR058.pdf>
